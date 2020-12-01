@@ -60,7 +60,7 @@ case "$1" in
 	;;
 	
 	*)
-		echo "Usage: $SCRIPT_EXEC {setup|create_network|generate|compose|setup}"
+		echo "Usage: $SCRIPT_EXEC setup"
 		RETVAL=1
 
 esac

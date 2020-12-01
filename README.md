@@ -1,2 +1,8 @@
-# cloud_os
-BAYRELL CLoud OS
+# BAYRELL CLoud OS
+
+Run:
+```
+./cloud_os.sh setup
+```
+
+Then open server-ip:8080
