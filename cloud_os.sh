@@ -36,9 +36,9 @@ function generate {
 case "$1" in
 	
 	create_network)
-		docker network create --subnet 172.21.0.1/16 --driver=overlay --attachable load_balancer -o "com.docker.network.bridge.name"="load_balancer"
+		docker network create --subnet 172.21.0.1/16 --driver=overlay --attachable cloud_frontend -o "com.docker.network.bridge.name"="cloud_frontend"
 		
-		docker network create --subnet 172.22.0.1/16 --driver=overlay --attachable cloud_admin -o "com.docker.network.bridge.name"="cloud_admin"
+		docker network create --subnet 172.22.0.1/16 --driver=overlay --attachable cloud_backend -o "com.docker.network.bridge.name"="cloud_backend"
 		
 		sleep 2
 		
@@ -50,7 +50,8 @@ case "$1" in
 	;;
 	
 	compose)
-		docker stack deploy -c example/standard.yaml cloud_os --with-registry-auth
+		docker stack deploy -c example/cloud_os.yaml cloud_os --with-registry-auth
+		docker stack deploy -c example/database.yaml database --with-registry-auth
 	;;
 	
 	setup)
