@@ -50,8 +50,8 @@ case "$1" in
 	;;
 	
 	compose)
-		docker stack deploy -c example/cloud_os.yaml cloud_os --with-registry-auth
 		docker stack deploy -c example/database.yaml database --with-registry-auth
+		docker stack deploy -c example/cloud_os.yaml cloud_os --with-registry-auth
 	;;
 	
 	setup)

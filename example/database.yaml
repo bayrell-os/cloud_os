@@ -9,7 +9,7 @@ services:
     volumes:
       - "mysql_node1_data:/data"
     env_file:
-      - ./cloud_os/cloud_env.conf
+      - ./env.conf
     deploy:
       replicas: 1
       endpoint_mode: dnsrr

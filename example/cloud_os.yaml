@@ -39,7 +39,7 @@ services:
         mode: host      
     logging:
       driver: journald
-	
+
   gateway:
     image: bayrell/bus_gateway:0.3.0
     hostname: "{{.Service.Name}}.{{.Task.ID}}.local"
@@ -64,7 +64,7 @@ services:
       - cloud_frontend
     logging:
       driver: journald
-		
+
   rabbitmq:
     image: rabbitmq:3.8.9-management
     hostname: "{{.Service.Name}}.{{.Task.ID}}.local"
@@ -88,7 +88,7 @@ services:
       - cloud_backend
     logging:
       driver: journald
-	
+
   http:
     image: bayrell/load_balancer_http:0.3.0
     hostname: "{{.Service.Name}}.{{.Task.ID}}.local"
