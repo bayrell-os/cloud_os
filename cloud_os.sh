@@ -9,7 +9,6 @@ VERSION=0.1.0
 TAG=`date '+%Y%m%d_%H%M%S'`
 
 
-
 function generate {
 	
 	ENV_PATH=$SCRIPT_PATH/example/env.conf
@@ -35,6 +34,15 @@ function generate {
 
 case "$1" in
 	
+	download)
+		docker pull bayrell/alpine_mariadb:10.5-2
+		docker pull rabbitmq:3.8.9-management
+		docker pull bayrell/alpine_php_fpm:7.4-1
+		docker pull bayrell/bus_gateway:0.3.0
+		docker pull bayrell/cloud_os_standard:0.3.1
+		docker pull bayrell/load_balancer_http:0.3.0
+	;;
+	
 	create_network)
 		docker network create --subnet 172.21.0.1/16 --driver=overlay --attachable cloud_frontend -o "com.docker.network.bridge.name"="cloud_frontend"
 		
@@ -55,6 +63,7 @@ case "$1" in
 	;;
 	
 	setup)
+		$0 download
 		$0 create_network
 		$0 generate
 		$0 compose
