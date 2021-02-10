@@ -37,9 +37,9 @@ case "$1" in
 	download)
 		docker pull bayrell/alpine_mariadb:10.5-2
 		docker pull rabbitmq:3.8.9-management
-		docker pull bayrell/alpine_php_fpm:7.4-1
+		docker pull bayrell/alpine_php_fpm:7.3-4
 		docker pull bayrell/bus_gateway:0.3.0
-		docker pull bayrell/cloud_os_standard:0.3.1
+		docker pull bayrell/cloud_os_standard:0.3.0
 		docker pull bayrell/load_balancer_http:0.3.0
 	;;
 	
