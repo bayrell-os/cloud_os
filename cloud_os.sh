@@ -15,28 +15,40 @@ function generate {
 	
 	if [ ! -f $ENV_PATH ]; then
 		
-		CLOUD_KEY=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 128`
-		SSH_PASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9!@#%^&*_\-=+~' | head -c 16`
+		if [ "$CLOUD_KEY" = "" ]; then
+			CLOUD_KEY=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 128`
+		fi
 		
-		echo "Enter ssh username for Cloud OS:"
-        read SSH_USER
+		if [ "$SSH_PASSWORD" = "" ]; then
+			SSH_PASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9!@#%^&*_\-+~' | head -c 16`
+		fi
+		
+		if [ "$SSH_USER" = "" ]; then
+			echo "Enter ssh username for Cloud OS:"
+			read SSH_USER
+		fi
 		
 		cat $SCRIPT_PATH/example/env.example > $ENV_PATH
 		
 		sed -i "s|CLOUD_KEY=.*|CLOUD_KEY=${CLOUD_KEY}|g" $ENV_PATH
 		sed -i "s|SSH_USER=.*|SSH_USER=${SSH_USER}|g" $ENV_PATH
 		sed -i "s|SSH_PASSWORD=.*|SSH_PASSWORD=${SSH_PASSWORD}|g" $ENV_PATH
-
-		echo $CLOUD_KEY > $CLOUD_KEY_PATH
 		
 	fi
 	
 }
 
 function output {
-	. $SCRIPT_PATH/example/env.conf
-	echo "SSH_USER=${SSH_USER}"
-	echo "SSH_PASSWORD=${SSH_PASSWORD}"
+	
+	ENV_PATH=$SCRIPT_PATH/example/env.conf
+	
+	if [ -f $ENV_PATH ]; then
+		. $ENV_PATH
+		echo "SSH_USER=${SSH_USER}"
+		echo "SSH_PASSWORD=${SSH_PASSWORD}"
+	else
+		echo "Setup cloud os first"
+	fi
 }
 
 
@@ -72,6 +84,7 @@ case "$1" in
 		$0 create_network
 		$0 generate
 		$0 compose
+		$0 output
 	;;
 	
 	*)
