@@ -1,132 +1,30 @@
-version: "3.7"
+version: "3.3"
 
 services:
-  
-  standard:
-    image: bayrell/cloud_os_standard:0.3.1
-    hostname: "{{.Service.Name}}.{{.Task.ID}}.local"
-    volumes:
-      - "standard_data:/data"
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-    env_file:
-      - ./env.conf
-    environment:
-      MYSQL_DB: "cloud_os_standard"
-    deploy:
-      replicas: 1
-      endpoint_mode: dnsrr
-      update_config:
-        parallelism: 1
-        failure_action: rollback
-        delay: 5s
-      restart_policy:
-        condition: "on-failure"
-        delay: 10s
-        window: 120s
-      placement:
-        constraints:
-          - node.labels.name == docker0
-    networks:
-      - cloud_backend
-    ports:
-      - target: 80
-        published: 8080
-        protocol: tcp
-        mode: host
-      - target: 22
-        published: 8022
-        protocol: tcp
-        mode: host      
-    logging:
-      driver: journald
-
-  gateway:
-    image: bayrell/bus_gateway:0.3.0
-    hostname: "{{.Service.Name}}.{{.Task.ID}}.local"
-    env_file:
-      - ./env.conf
-    deploy:
-      replicas: 1
-      endpoint_mode: dnsrr
-      update_config:
-        parallelism: 1
-        failure_action: rollback
-        delay: 5s
-      restart_policy:
-        condition: "on-failure"
-        delay: 10s
-        window: 120s
-      placement:
-        constraints:
-          - node.labels.name == docker0
-    networks:
-      - cloud_backend
-      - cloud_frontend
-    logging:
-      driver: journald
-
-  rabbitmq:
-    image: rabbitmq:3.8.9-management
-    hostname: "{{.Service.Name}}.{{.Task.ID}}.local"
-    volumes:
-      - "rabbitmq_data:/var/lib/rabbitmq"
-    deploy:
-      replicas: 1
-      endpoint_mode: dnsrr
-      update_config:
-        parallelism: 1
-        failure_action: rollback
-        delay: 5s
-      restart_policy:
-        condition: "on-failure"
-        delay: 10s
-        window: 120s
-      placement:
-        constraints:
-          - node.labels.name == docker0
-    networks:
-      - cloud_backend
-    logging:
-      driver: journald
-
-  http:
-    image: bayrell/load_balancer_http:0.3.0
-    hostname: "{{.Service.Name}}.{{.Task.ID}}.local"
-    volumes:
-      - "http_data:/data"
-    env_file:
-      - ./env.conf
-    deploy:
-      replicas: 1
-      endpoint_mode: dnsrr
-      update_config:
-        parallelism: 1
-        failure_action: rollback
-        delay: 5s
-      restart_policy:
-        condition: "on-failure"
-        delay: 10s
-        window: 120s
-      placement:
-        constraints:
-          - node.labels.name == docker0
-    networks:
-      - cloud_frontend
-    ports:
-      - target: 80
-        published: 80
-        protocol: tcp
-        mode: host
-    logging:
-      driver: journald    
+    
+    standard_node1:
+        image: bayrell/cloud_os_standard:0.4.0
+        hostname: "cloud_os_standard_node1_1.local"
+        volumes:
+            - "standard_node1_data:/data"
+            - "/var/run/docker.sock:/var/run/docker.sock:ro"
+        ports:
+            - "8080:80"
+        env_file:
+            - ./env.conf
+        environment:
+            TZ: "Asia/Almaty"
+            WWW_UID: 1000
+            WWW_GID: 1000
+        restart: always
+        networks:
+            - cloud_network
+        logging:
+            driver: journald
     
 volumes:
-  rabbitmq_data:
-  standard_data:
-  http_data:
-
+    standard_node1_data:
+    
 networks:
-  cloud_backend:
-    external: true
-  cloud_frontend:
-    external: true
+    cloud_network:
+        external: true
