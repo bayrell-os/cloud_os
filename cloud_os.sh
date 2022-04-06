@@ -15,8 +15,8 @@ function generate {
 	
 	if [ ! -f $ENV_PATH ]; then
 		
-		if [ "$CLOUD_KEY" = "" ]; then
-			CLOUD_KEY=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 128`
+		if [ "$CLOUD_OS_KEY" = "" ]; then
+			CLOUD_OS_KEY=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c 128`
 		fi
 		
 		if [ "$SSH_PASSWORD" = "" ]; then
@@ -30,7 +30,7 @@ function generate {
 		
 		cat $SCRIPT_PATH/example/env.example > $ENV_PATH
 		
-		sed -i "s|CLOUD_KEY=.*|CLOUD_KEY=${CLOUD_KEY}|g" $ENV_PATH
+		sed -i "s|CLOUD_OS_KEY=.*|CLOUD_OS_KEY=${CLOUD_OS_KEY}|g" $ENV_PATH
 		sed -i "s|SSH_USER=.*|SSH_USER=${SSH_USER}|g" $ENV_PATH
 		sed -i "s|SSH_PASSWORD=.*|SSH_PASSWORD=${SSH_PASSWORD}|g" $ENV_PATH
 		
