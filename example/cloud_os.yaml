@@ -9,7 +9,7 @@ services:
             - "standard_node1_data:/data"
             - "/var/run/docker.sock:/var/run/docker.sock:ro"
         ports:
-            - "8080:80"
+            - "8022:22"
         env_file:
             - ./env.conf
         environment:
