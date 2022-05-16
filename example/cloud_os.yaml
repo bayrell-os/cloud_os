@@ -3,7 +3,7 @@ version: "3.3"
 services:
     
     standard_node1:
-        image: bayrell/cloud_os_standard:0.4.0
+        image: bayrell/cloud_os_standard:0.4.1
         hostname: "cloud_os_standard_node1_1.local"
         volumes:
             - "standard_node1_data:/data"
@@ -16,7 +16,7 @@ services:
             TZ: "Asia/Almaty"
             WWW_UID: 1000
             WWW_GID: 1000
-        restart: always
+        restart: unless-stopped
         networks:
             - cloud_network
         logging:
