@@ -1,2 +1,4 @@
 /example/cloud.key
 /example/env.conf
+/example/jwt_private.key
+/example/jwt_public.key

@@ -2,11 +2,11 @@ version: "3.3"
 
 services:
     
-    standard_node1:
-        image: bayrell/cloud_os_standard:0.4.1
-        hostname: "cloud_os_standard_node1_1.local"
+    standard:
+        image: bayrell/cloud_os_standard:0.4.2
+        hostname: "cloud_os_standard.local"
         volumes:
-            - "standard_node1_data:/data"
+            - "standard_data:/data"
             - "/var/run/docker.sock:/var/run/docker.sock:ro"
         ports:
             - "8022:22"
@@ -23,7 +23,7 @@ services:
             driver: journald
     
 volumes:
-    standard_node1_data:
+    standard_data:
     
 networks:
     cloud_network:
