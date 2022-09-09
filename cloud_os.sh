@@ -19,9 +19,10 @@ function read_env_config {
 	
 		while IFS= read -r line; do
 			IFS="=" read -r left right <<< $line
-			CMD="$left=$right"
+			
+			CMD="$left=\"$right\""
 			if [ ! -z "$left" ]; then
-				eval $CMD
+				eval "$CMD"
 			fi
 		done < $ENV_CONFIG_PATH
 	
@@ -68,8 +69,9 @@ function generate {
 				JWT_PRIVATE_KEY="${JWT_PRIVATE_KEY}\n$line"
 			fi
 		done < $SCRIPT_PATH/example/jwt_private.key
-		echo "JWT_PRIVATE_KEY=\"$JWT_PRIVATE_KEY\"" >> $ENV_CONFIG_PATH
+		echo "JWT_PRIVATE_KEY=$JWT_PRIVATE_KEY" >> $ENV_CONFIG_PATH
 		
+		yes | rm -f $SCRIPT_PATH/example/jwt_private.key
 	fi
 	
 	if [ -z "$JWT_PUBLIC_KEY" ]; then
@@ -90,8 +92,9 @@ function generate {
 				JWT_PUBLIC_KEY="${JWT_PUBLIC_KEY}\n$line"
 			fi
 		done < $SCRIPT_PATH/example/jwt_public.key
-		echo "JWT_PUBLIC_KEY=\"$JWT_PUBLIC_KEY\"" >> $ENV_CONFIG_PATH
+		echo "JWT_PUBLIC_KEY=$JWT_PUBLIC_KEY" >> $ENV_CONFIG_PATH
 		
+		yes | rm -f $SCRIPT_PATH/example/jwt_public.key
 	fi
 	
 }
