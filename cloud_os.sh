@@ -5,7 +5,7 @@ SCRIPT=$(readlink -f $0)
 SCRIPT_PATH=`dirname $SCRIPT`
 
 RETVAL=0
-VERSION=0.4.2
+VERSION=0.4.3
 TAG=`date '+%Y%m%d_%H%M%S'`
 
 # RS256
