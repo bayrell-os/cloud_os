@@ -3,7 +3,7 @@ version: "3.3"
 services:
     
     standard:
-        image: bayrell/cloud_os_standard:0.4.3
+        image: bayrell/cloud_os_standard:0.4.4
         hostname: "cloud_os_standard.local"
         volumes:
             - "standard_data:/data"
