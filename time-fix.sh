@@ -17,6 +17,8 @@ case "$1" in
             exit 1
         fi
         
+        date --set "$2"
+
         echo "Current date:"
         date
         
