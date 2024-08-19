@@ -79,7 +79,7 @@ function download_container()
 function apt_install()
 {
 	sudo apt-get update
-	sudo apt-get install aptitude mc nano htop iftop bwm-ng iperf iperf3 iotop tmux screen python3-pip openntpd sshfs net-tools rsync jq
+	sudo apt-get install jq
 }
 
 function create_swarm()
