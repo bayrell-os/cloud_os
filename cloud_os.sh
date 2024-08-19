@@ -78,8 +78,11 @@ function download_container()
 
 function apt_install()
 {
-	sudo apt-get update
-	sudo apt-get install jq
+	res=`whereis jq | grep bin`
+	if [ -z "$res" ]; then
+		sudo apt-get update
+		sudo apt-get install jq
+	fi
 }
 
 function create_swarm()
@@ -140,8 +143,6 @@ function setup_json_config()
 	
 	# Save file
 	echo $config | jq . | sudo tee /etc/docker/daemon.json > /dev/null
-	
-	#cat /etc/docker/daemon.json
 }
 
 case "$1" in
@@ -166,18 +167,19 @@ case "$1" in
 		compose
 	;;
 	
-	output)
+	print)
 		print_env_config
 	;;
 	
-	install)
+	init)
+		apt_install
 		download_container
 		setup_json_config
 		create_swarm
 		create_network
 	;;
 	
-	setup)
+	install|setup)
 		apt_install
 		download_container
 		setup_json_config
@@ -189,7 +191,7 @@ case "$1" in
 	;;
 	
 	*)
-		echo "Usage: $SCRIPT_EXEC {setup|compose}"
+		echo "Usage: $SCRIPT_EXEC {setup|compose|print}"
 		RETVAL=1
 
 esac
