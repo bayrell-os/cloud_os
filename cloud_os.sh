@@ -38,10 +38,7 @@ function generate_env_config()
 	fi
 	
 	if [ -z "$ADMIN_USERNAME" ]; then
-		setup_admin_name
-		if [ $? -ne 0 ]; then
-			exit 1
-		fi
+		ADMIN_USERNAME="admin"
 	fi
 	
 	local text=""
@@ -57,10 +54,14 @@ function generate_env_config()
 
 function setup_admin_name()
 {
-	local text=$(whiptail --title "Enter ssh username for Cloud OS" \
-		--inputbox "Type username" 8 39 --nocancel 3>&1 1>&2 2>&3)
+	local text=$(whiptail --title "Type username" \
+		--inputbox "Enter ssh username for Cloud OS" 8 39 3>&1 1>&2 2>&3)
 	
 	if [ $? -ne 0 ]; then
+		return 1
+	fi
+	
+	if [ -z "$text" ]; then
 		return 1
 	fi
 	
@@ -70,10 +71,14 @@ function setup_admin_name()
 
 function setup_admin_password()
 {
-	local text=$(whiptail --title "Enter ssh password for Cloud OS" \
-		--inputbox "Type password" 8 39 --nocancel 3>&1 1>&2 2>&3)
+	local text=$(whiptail --title "Type password" \
+		--inputbox "Enter ssh password for Cloud OS" 8 39 3>&1 1>&2 2>&3)
 	
 	if [ $? -ne 0 ]; then
+		return 1
+	fi
+	
+	if [ -z "$text" ]; then
 		return 1
 	fi
 	
@@ -84,13 +89,17 @@ function setup_admin_password()
 function change_username()
 {
 	setup_admin_name
-	generate_env_config
+	if [ $? -eq 0 ]; then
+		generate_env_config
+	fi
 }
 
 function change_password()
 {
 	setup_admin_password
-	generate_env_config
+	if [ $? -eq 0 ]; then
+		generate_env_config
+	fi
 }
 
 function print_env_config()
@@ -296,10 +305,34 @@ function setup_docker_config()
 	echo $config | jq . | sudo tee /etc/docker/daemon.json > /dev/null
 }
 
+function setup_crontab()
+{
+	local text=`sudo crontab -l -u root 2>/dev/null`
+	local update=0
+	local res=""
+	
+	res=`echo $text | grep "docker system prune"`
+	if [ -z "$res" ]; then
+		text="${text}0 */2 * * * docker system prune --filter \"until=24h\" -f -a > /dev/null 2>&1\n"
+		update=1
+	fi
+	
+	res=`echo $text | grep "docker image prune"`
+	if [ -z "$res" ]; then
+		text="${text}0 */2 * * * docker image prune --filter \"until=24h\" -f -a > /dev/null 2>&1\n"
+		update=1
+	fi
+	
+	if [ $update -eq 1 ]; then
+		echo -e "$text" | sudo crontab -u root -
+	fi
+}
+
 function init()
 {
 	setup_locale
 	setup_journald_config
+	setup_crontab
 	install_jq
 	install_iptables
 	install_docker
@@ -308,9 +341,94 @@ function init()
 	create_network
 }
 
+function run_installer()
+{
+	init
+	generate_env_config
+	download_container
+	compose
+	print_env_config
+}
+
+function show_setup()
+{
+	local text=""
+	text="${text}Version: $VERSION\n"
+	text="${text}\n"
+	text="${text}The installer will do:\n"
+	text="${text}1) Setup en locale\n"
+	text="${text}2) Setup journald\n"
+	text="${text}3) Setup iptables\n"
+	text="${text}4) Create Docker swarm\n"
+	text="${text}5) Compose cloud os container\n"
+	text="${text}\n"
+	text="${text}Do you want to run installer?\n"
+	whiptail --title "BAYRELL Cloud OS installer" --yesno "$text" 20 60
+	
+	if [ $? -ne 0 ]; then
+		return 1
+	fi
+	
+	setup_admin_name
+	
+	if [ -z "$ADMIN_USERNAME" ]; then
+		return 1
+	fi
+	
+	echo "Run installer"
+	run_installer
+	
+	return 0
+}
+
+function show_menu()
+{
+	local item=$(whiptail --title "BAYRELL Cloud OS installer" --menu "Chose option:" 15 60 6 \
+		"setup" "Install OS" \
+		"username" "Change username" \
+		"password" "Change password" \
+		"compose" "Compose docker container" \
+		"print" "Print config" \
+		"exit" "Exit" 3>&1 1>&2 2>&3)
+	
+	if [ $? -ne 0 ]; then
+		return 1
+	fi
+	
+	if [ "$item" = "setup" ]; then
+		show_setup
+		return 1
+	fi
+	
+	if [ "$item" = "username" ]; then
+		change_username
+		return 0
+	fi
+	
+	if [ "$item" = "password" ]; then
+		change_password
+		return 0
+	fi
+	
+	if [ "$item" = "compose" ]; then
+		generate_env_config
+		compose
+		return 1
+	fi
+	
+	if [ "$item" = "print" ]; then
+		print_env_config
+		return 1
+	fi
+	
+	if [ "$item" = "exit" ]; then
+		return 1
+	fi
+	
+	return 1
+}
 
 read_env_config
-
 
 case "$1" in
 	
@@ -343,16 +461,21 @@ case "$1" in
 	;;
 	
 	install|setup)
-		init
-		generate_env_config
-		download_container
-		compose
-		print_env_config
+		run_installer
+	;;
+	
+	help)
+		echo "Usage: $SCRIPT_EXEC {setup|compose|print}"
+		exit 1
 	;;
 	
 	*)
-		echo "Usage: $SCRIPT_EXEC {setup|compose|print}"
-		exit 1
+		while true; do
+			show_menu
+			if [ $? -ne 0 ]; then
+				exit 0
+			fi
+		done
 
 esac
 
