@@ -133,6 +133,10 @@ function apt_update()
 {
 	if [ "$APT_UPDATED" = "0" ]; then
 		sudo apt-get update
+		if [ $? -ne 0 ]; then
+			echo "Failed to update apt"
+			exit 1
+		fi
 		APT_UPDATED=1
 	fi
 }
@@ -143,6 +147,10 @@ function install_jq()
 	if [ -z "$res" ]; then
 		apt_update
 		sudo apt-get install -y jq
+		if [ $? -ne 0 ]; then
+			echo "Failed to install jq"
+			exit 1
+		fi
 	fi
 }
 
@@ -179,8 +187,15 @@ function install_iptables()
 		text="${text}COMMIT\n"
 		echo -e $text | sudo tee /etc/iptables/rules.v4 > /dev/null
 		sudo cp /etc/iptables/rules.v4 /etc/iptables/rules.v6
+	fi
+	local res=`whereis iptables | grep bin`
+	if [ -z "$res" ]; then
 		apt_update
 		sudo DEBIAN_FRONTEND='noninteractive' apt-get install -y iptables-persistent
+		if [ $? -ne 0 ]; then
+			echo "Failed to install iptables"
+			exit 1
+		fi
 	fi
 }
 
@@ -191,6 +206,10 @@ function install_docker()
 		echo "Install docker"
 		apt_update
 		sudo apt-get install -y docker.io
+		if [ $? -ne 0 ]; then
+			echo "Failed to install docker"
+			exit 1
+		fi
 	fi
 }
 
@@ -201,6 +220,10 @@ function create_swarm()
 	if [ ! -z "$res" ]; then
 		echo "Create docker swarm"
 		sudo docker swarm init
+		if [ $? -ne 0 ]; then
+			echo "Failed to create docker swarm"
+			exit 1
+		fi
 	fi
 }
 
@@ -211,6 +234,10 @@ function create_network()
 		echo "Create docker cloud network"
 		sudo docker network create --subnet 172.21.0.0/16 --driver=overlay \
 			--attachable cloud_network -o "com.docker.network.bridge.name"="cloud_network"
+		if [ $? -ne 0 ]; then
+			echo "Failed to create docker network"
+			exit 1
+		fi
 	fi
 }
 
@@ -235,6 +262,10 @@ function compose()
 		--restart unless-stopped \
 		--network cloud_network \
 		bayrell/cloud_os_standard:$VERSION
+	if [ $? -ne 0 ]; then
+		echo "Failed to compose cloud os"
+		exit 1
+	fi
 }
 
 function setup_locale()
@@ -276,6 +307,10 @@ function setup_locale()
 	if [ $generate_locale -eq 1 ]; then
 		echo "Setup locale"
 		sudo locale-gen
+		if [ $? -ne 0 ]; then
+			echo "Failed to generate locale"
+			exit 1
+		fi
 	fi
 }
 
