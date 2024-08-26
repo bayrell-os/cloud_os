@@ -4,7 +4,8 @@ SCRIPT_EXEC=$0
 SCRIPT=$(readlink -f $0)
 SCRIPT_PATH=`dirname $SCRIPT`
 
-VERSION=0.5.1
+VERSION=$1
+VERSION_LATEST="0.5.1"
 ENV_CONFIG_PATH=/etc/cloudos.conf
 ENABLE_IPTABLES=1
 ADMIN_USERNAME=""
@@ -23,6 +24,15 @@ function read_env_config()
 			fi
 		done < $ENV_CONFIG_PATH
 	fi
+	
+	if [ -z "$VERSION" ] && [ ! -z "$CLOUD_OS_VERSION" ]; then
+		VERSION=$CLOUD_OS_VERSION
+	fi
+	
+	if [ -z "$VERSION" ] && [ ! -z "$VERSION_LATEST" ]; then
+		VERSION=$VERSION_LATEST
+	fi
+	
 	ADMIN_USERNAME=$SSH_USER
 	ADMIN_PASSWORD=$SSH_PASSWORD
 }
@@ -47,6 +57,7 @@ function generate_env_config()
 	text="${text}SERVICE_ID={{.Service.ID}}\n"
 	text="${text}CLOUD_OS_GATEWAY=cloud_os_standard_1\n"
 	text="${text}CLOUD_OS_KEY=${CLOUD_OS_KEY}\n"
+	text="${text}CLOUD_OS_VERSION=${VERSION}\n"
 	text="${text}SSH_USER=${ADMIN_USERNAME}\n"
 	text="${text}SSH_PASSWORD=${ADMIN_PASSWORD}\n"
 	echo -e $text | sudo tee $ENV_CONFIG_PATH > /dev/null
@@ -106,6 +117,7 @@ function print_env_config()
 {
 	if [ -f "$ENV_CONFIG_PATH" ]; then
 		read_env_config
+		echo "Cloud OS ${VERSION}"
 		echo "SSH_USER=${SSH_USER}"
 		echo "SSH_PASSWORD=${SSH_PASSWORD}"
 	else
@@ -243,7 +255,7 @@ function create_network()
 
 function compose()
 {
-	echo "Compose cloud os"
+	echo "Compose Cloud OS"
 	local res=`sudo docker ps -a |grep cloud_os_standard`
 	if [ ! -z "$res" ]; then
 		sudo docker stop cloud_os_standard > /dev/null
@@ -404,13 +416,16 @@ function show_setup()
 		return 1
 	fi
 	
-	setup_admin_name
+	if [ -z "$ADMIN_USERNAME" ]; then
+		setup_admin_name
+	fi
 	
 	if [ -z "$ADMIN_USERNAME" ]; then
 		return 1
 	fi
 	
 	echo "Run installer"
+	echo "Install Cloud OS $VERSION"
 	run_installer
 	
 	return 0
