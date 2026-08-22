@@ -7,7 +7,7 @@ SCRIPT_PATH=`dirname $SCRIPT`
 VERSION=$1
 VERSION_LATEST="0.5.1"
 ENV_CONFIG_PATH=/etc/cloudos.conf
-ENABLE_IPTABLES=1
+ENABLE_IPTABLES=0
 ADMIN_USERNAME=""
 ADMIN_PASSWORD=""
 APT_UPDATED=0
@@ -168,6 +168,9 @@ function install_jq()
 
 function install_iptables()
 {
+	if [ "$ENABLE_IPTABLES" = "0" ]; then
+		return 0
+	fi
 	if [ ! -d /etc/iptables ]; then
 		sudo mkdir /etc/iptables
 	fi
@@ -271,7 +274,7 @@ function compose()
 		--name cloud_os_standard \
 		--hostname cloud_os_standard.local \
 		--env-file $ENV_CONFIG_PATH \
-		--restart unless-stopped \
+		--restart always \
 		--network cloud_network \
 		bayrell/cloud_os_standard:$VERSION
 	if [ $? -ne 0 ]; then
@@ -433,10 +436,11 @@ function show_setup()
 
 function show_menu()
 {
-	local item=$(whiptail --title "BAYRELL Cloud OS installer" --menu "Chose option:" 15 60 6 \
+	local item=$(whiptail --title "BAYRELL Cloud OS installer" --menu "Chose option:" 15 60 7 \
 		"setup" "Install OS" \
 		"username" "Change username" \
 		"password" "Change password" \
+		"generate_password" "Generate password" \
 		"compose" "Compose docker container" \
 		"print" "Print config" \
 		"exit" "Exit" 3>&1 1>&2 2>&3)
@@ -457,6 +461,13 @@ function show_menu()
 	
 	if [ "$item" = "password" ]; then
 		change_password
+		return 0
+	fi
+	
+	if [ "$item" = "generate_password" ]; then
+		ADMIN_PASSWORD=`cat /dev/urandom | tr -dc 'a-zA-Z0-9!@%^*_\-+~' | head -c 16`
+		generate_env_config
+		print_env_config
 		return 0
 	fi
 	
